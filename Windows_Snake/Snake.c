@@ -8,6 +8,7 @@
 #define True 1		//真值
 #define height 20	//游戏高度
 #define width 40	//游戏宽度
+#define abs(x) (((x)>0)?(-x):(x))
 
 #define UP 'w'
 #define DOWN 's'
@@ -17,10 +18,13 @@
 
 void gotoxy(int x,int y);	//设置控制台的光标位置.
 void init_map();		//初始化地图
+void rand_fplace();		//随机生成食物的位置
 void update_food();		//更新食物
 void snake_move();		//蛇移动位置
 int  is_alive();		//蛇是否存活
 void is_food();			//判断食物是否被吃
+void snake_direction(char ch);	//改变蛇的方向
+void show_data();
 
 struct Snake{
 	int status;	//蛇的状态生死
@@ -28,10 +32,10 @@ struct Snake{
 	int x[Max];	//蛇的x坐标
 	int y[Max];	//蛇的y坐标
 	char direction;	//蛇的方向
+	int speed;	//蛇的速度
 }snake;
 struct Food
 {
-	int status;
 	int x;		//食物的x坐标
 	int y;		//食物的y坐标
 }food;
@@ -46,9 +50,12 @@ int main()
 		snake_move();
 		if(!is_alive())
 			break;
-		Sleep(800);
+		Sleep(300);
+		show_data();
+
 	}
-	printf("\nGame Over!");
+	gotoxy(width/2-5,height/2);
+	printf("Game Over!");
 	getchar();
 	return 0;
 }
@@ -78,11 +85,10 @@ void gotoxy(int x, int y)
 void init_map()
 {
 	srand(time(NULL));
-	food.y=rand()%(height+2)-1;
-	food.x=rand()%(width+2)-1;
-	food.status=0;
+	food.y=rand()%(height-2)+1;
+	food.x=rand()%(width-2)+1;
 	gotoxy(food.x,food.y);
-	printf("!");
+	printf("*");
 
 	for(int i=0;i<Max;i++)
 	{
@@ -122,13 +128,10 @@ void update_food()			//更新食物
 {
 	if(snake.x[snake.len-1]==food.x&&snake.y[snake.len-1]==food.y)
 	{
-		srand(time(NULL));
-		food.y=rand()%(height-2)+1;
-		food.x=rand()%(width-2)+1;
+		rand_fplace();
 		gotoxy(food.x,food.y);
 		printf("*");
 		snake.len++;
-		food.status=1;
 		snake.x[snake.len-1]=snake.x[snake.len-2];
 		snake.y[snake.len-1]=snake.y[snake.len-2];
 	}
@@ -154,24 +157,65 @@ int is_alive()				//判读蛇的存活状态
 
 void snake_move()
 {
-	if(kbhit())	snake.direction=getch();
-		gotoxy(snake.x[0],snake.y[0]);
-		printf(" ");
-		food.status=0;
-	for(int i=0;i<snake.len-1;i++)
+	char ch;
+	if(kbhit())
+		ch=getch();
+	else
+		ch=snake.direction;
+
+	gotoxy(snake.x[0],snake.y[0]);
+	printf(" ");
+	
+	for(int i=0;i<snake.len-1;i++)	//移动蛇的位置
 	{
 		snake.x[i]=snake.x[i+1];
 		snake.y[i]=snake.y[i+1];
 	}
-	switch(snake.direction)
+
+	switch(ch)		//当蛇的长度小于2的时候可以任意改变蛇的方向，其他时候不能向后走;
+	{
+		case UP:if(snake.direction!=DOWN||snake.len<=1){snake_direction(UP);snake.direction=UP;}else snake_direction(DOWN);break;
+		case DOWN:if(snake.direction!=UP||snake.len<=1){snake_direction(DOWN);snake.direction=DOWN;}else snake_direction(UP);break;
+		case RIGHT:if(snake.direction!=LEFT||snake.len<=1){snake_direction(RIGHT);snake.direction=RIGHT;}else snake_direction(LEFT);break;
+		case LEFT:if(snake.direction!=RIGHT||snake.len<=1){snake_direction(LEFT);snake.direction=LEFT;}else snake_direction(RIGHT);break;
+		default:snake_direction(snake.direction);break;
+	}
+	
+	gotoxy(snake.x[snake.len-1],snake.y[snake.len-1]);
+	printf("#");
+}
+
+void snake_direction(char ch)	//改变蛇的方向
+{
+	switch(ch)
 	{
 		case UP:snake.y[snake.len-1]--;break;
 		case DOWN:snake.y[snake.len-1]++;break;
 		case RIGHT:snake.x[snake.len-1]++;break;
 		case LEFT:snake.x[snake.len-1]--;break;
-		default: break;
 	}
-	
-	gotoxy(snake.x[snake.len-1],snake.y[snake.len-1]);
-	printf("#");
+}
+
+void rand_fplace()		//随机食物地址生成函数
+{
+	do
+	{
+		srand(time(NULL));
+		food.y=rand()%(height-2)+1;
+		food.x=rand()%(width-2)+1;
+		for(int i=0;i<snake.len-1;i++)
+		{
+			if(food.x==snake.x[i]&&food.y==snake.y[i])
+				continue;
+		}
+
+	}while(False);
+}
+
+void show_data()
+{
+	gotoxy(width+5,height/2-1);
+	printf("snake len=%d",snake.len);
+	gotoxy(width+5,height/2+1);
+	printf("snake speed=%d",snake.speed);
 }
