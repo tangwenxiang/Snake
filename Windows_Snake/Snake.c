@@ -46,7 +46,7 @@ int main()
 		snake_move();
 		if(!is_alive())
 			break;
-		Sleep(1000);
+		Sleep(800);
 	}
 	printf("\nGame Over!");
 	getchar();
@@ -84,6 +84,11 @@ void init_map()
 	gotoxy(food.x,food.y);
 	printf("!");
 
+	for(int i=0;i<Max;i++)
+	{
+		snake.x[i]=0;
+		snake.y[i]=0;
+	}
 	snake.x[0]=width/2;
 	snake.y[0]=height/2;
 	snake.len=1;
@@ -118,8 +123,8 @@ void update_food()			//更新食物
 	if(snake.x[snake.len-1]==food.x&&snake.y[snake.len-1]==food.y)
 	{
 		srand(time(NULL));
-		food.y=rand()%(height-2)-1;
-		food.x=rand()%(width-2)-1;
+		food.y=rand()%(height-2)+1;
+		food.x=rand()%(width-2)+1;
 		gotoxy(food.x,food.y);
 		printf("*");
 		snake.len++;
@@ -136,9 +141,9 @@ int is_alive()				//判读蛇的存活状态
 		snake.status=False;
 	}
 
-	for(int i;i<snake.len-3;i++)
+	for(int i=0;i<snake.len-3;i++)
 	{
-		if(snake.x[0]==snake.x[i]&&snake.y[0]==snake.y[i])
+		if(snake.x[snake.len-1]==snake.x[i]&&snake.y[snake.len-1]==snake.y[i])
 		{
 			snake.status=False;
 		}
@@ -150,16 +155,13 @@ int is_alive()				//判读蛇的存活状态
 void snake_move()
 {
 	if(kbhit())	snake.direction=getch();
-	if(food.status!=1)
-	{
 		gotoxy(snake.x[0],snake.y[0]);
 		printf(" ");
 		food.status=0;
-		for(int i=0;i<snake.len-1;i++)
-		{
-			snake.x[i]=snake.x[i+1];
-			snake.y[i]=snake.y[i+1];
-		}
+	for(int i=0;i<snake.len-1;i++)
+	{
+		snake.x[i]=snake.x[i+1];
+		snake.y[i]=snake.y[i+1];
 	}
 	switch(snake.direction)
 	{
@@ -167,6 +169,7 @@ void snake_move()
 		case DOWN:snake.y[snake.len-1]++;break;
 		case RIGHT:snake.x[snake.len-1]++;break;
 		case LEFT:snake.x[snake.len-1]--;break;
+		default: break;
 	}
 	
 	gotoxy(snake.x[snake.len-1],snake.y[snake.len-1]);
