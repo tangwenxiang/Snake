@@ -198,18 +198,23 @@ void snake_direction(char ch)	//改变蛇的方向
 
 void rand_fplace()		//随机食物地址生成函数
 {
-	do
+	int flag=1;
+	while(flag)
 	{
 		srand(time(NULL));
 		food.y=rand()%(height-2)+1;
 		food.x=rand()%(width-2)+1;
-		for(int i=0;i<snake.len-1;i++)
+		for(int i=0;i<snake.len;i++)
 		{
 			if(food.x==snake.x[i]&&food.y==snake.y[i])
-				continue;
+			{
+				flag=1;
+				break;
+			}
+			else
+				flag=0;
 		}
-
-	}while(False);
+	}
 }
 
 void show_data()
